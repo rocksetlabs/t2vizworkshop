@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bar Chart Example</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+</head>
+<body>
+  <canvas id="chart"></canvas>
+
+  <script>
+    // Function to fetch data and create/update the chart
+    const fetchDataAndCreateChart = async () => {
+      try {
+        const response = await fetch('your_api_endpoint', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'ApiKey dek0thatJDmydrmwajGbQ7AyL5W0lzIuqsB798j6aGdm88C1KrtRlHz0fHlAzr3t',
+          },
+          body: JSON.stringify({
+            sql: "select FORMAT_DATE('%H', t.created_at) as tweet_time, count(*) as total_tweets from Demo.twitter_live as t where t.created_at > current_timestamp() - HOURS(6) group by 1",
+          }),
+        });
+
+        const data = await response.json();
+
+        // Process the data to extract tweet_time and total_tweets
+        const tweetTime = data.map(item => item.tweet_time);
+        const totalTweets = data.map(item => item.total_tweets);
+
+        // Get the chart canvas element
+        const chartCanvas = document.getElementById('chart');
+
+        // Destroy the previous chart instance
+        if (window.myChart) {
+          window.myChart.destroy();
+        }
+
+        // Create a new chart instance
+        window.myChart = new Chart(chartCanvas, {
+          type: 'bar',
+          data: {
+            labels: tweetTime,
+            datasets: [{
+              label: 'Total Tweets',
+              data: totalTweets,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1,
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    // Fetch data and create/update chart initially
+    fetchDataAndCreateChart();
+
+    // Fetch data and update the chart every 30 seconds
+    setInterval(fetchDataAndCreateChart, 30000);
+  </script>
+</body>
+</html>
